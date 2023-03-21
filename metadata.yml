@@ -1,0 +1,9 @@
+#cloud-config
+packages:
+  - [squid, 4.10-1ubuntu1.7]
+
+runcmd:
+  - sudo systemctl start squid
+  - sudo systemctl enable squid
+  - sed -i '/^http_access allow localhost$/a http_access allow all' /etc/squid/squid.conf
+  - sudo systemctl restart squid
