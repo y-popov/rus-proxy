@@ -22,6 +22,12 @@ variable "iam_token" {
   nullable = false
 }
 
+variable "preemptible" {
+  type        = bool
+  default     = false
+  description = "reduces the price twice but instance may stop suddenly"
+}
+
 provider "yandex" {
   token     = var.iam_token
   cloud_id  = var.cloud_id
@@ -37,6 +43,10 @@ resource "yandex_compute_instance" "proxy_instance" {
     cores         = 2
     memory        = 2
     core_fraction = 50
+  }
+
+  scheduling_policy {
+    preemptible = var.preemptible
   }
 
   boot_disk {
