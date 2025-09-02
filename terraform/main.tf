@@ -5,27 +5,19 @@ terraform {
     }
   }
   required_version = ">= 0.13"
-}
 
-variable "cloud_id" {
-  type     = string
-  nullable = false
-}
+  backend "s3" {
+    endpoints = {
+      s3 = "https://storage.yandexcloud.net"
+    }
+    bucket   = "tf-states-bucket"
+    region   = "ru-central1"
+    key      = "ru-proxy/terraform.tfstate"
 
-variable "folder_id" {
-  type     = string
-  nullable = false
-}
-
-variable "iam_token" {
-  type     = string
-  nullable = false
-}
-
-variable "preemptible" {
-  type        = bool
-  default     = false
-  description = "reduces the price twice but instance may stop suddenly"
+    skip_region_validation      = true
+    skip_credentials_validation = true
+    skip_requesting_account_id  = true
+  }
 }
 
 provider "yandex" {
