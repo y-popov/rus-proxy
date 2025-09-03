@@ -1,6 +1,6 @@
 #cloud-config
 packages:
-  - [squid, 4.10-1ubuntu1.7]
+  - [squid, 4.10-1ubuntu1.13]
 
 runcmd:
   - sudo systemctl start squid
