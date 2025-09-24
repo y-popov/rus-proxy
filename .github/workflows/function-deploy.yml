@@ -1,0 +1,19 @@
+name: Deploy Serverless function
+on: push
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: goodsmileduck/yandex-serverless-action@v2
+        with:
+          token: ${{ secrets.YC_OAUTH_TOKEN }}
+          function_id: ${{ vars.YC_FUNCTION_ID }}
+          runtime: 'golang123'
+          memory: '128'
+          execution_timeout: 15
+          entrypoint: 'main.handleProxy'
+          environment: PROXY_USER=${{ vars.PROXY_USER }},PROXY_PASS=${{ secrets.PROXY_PASS }}
+          source: '.'
+          exclude: '.github/,terraform/'
