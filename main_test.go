@@ -76,7 +76,7 @@ func TestHandleRequestAndRedirect(t *testing.T) {
 			t.Setenv("PROXY_USER", "test-user")
 			t.Setenv("PROXY_PASS", "valid-pass")
 
-			handleProxy(rr, req)
+			HandleProxy(rr, req)
 
 			res := rr.Result()
 

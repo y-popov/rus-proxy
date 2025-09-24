@@ -11,7 +11,7 @@ import (
 )
 
 // Main handler
-func handleProxy(w http.ResponseWriter, r *http.Request) {
+func HandleProxy(w http.ResponseWriter, r *http.Request) {
 	// Auth first
 	if !checkAuth(r) {
 		w.Header().Set("Proxy-Authenticate", `Basic realm="Restricted"`)
@@ -142,7 +142,7 @@ func callAndLogError(f func() error) {
 func main() {
 	server := &http.Server{
 		Addr:    ":8080", // listen on port 8080
-		Handler: http.HandlerFunc(handleProxy),
+		Handler: http.HandlerFunc(HandleProxy),
 	}
 
 	// Check if port is available
