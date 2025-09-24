@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: goodsmileduck/yandex-serverless-action@v2
+      - uses: goodsmileduck/yandex-serverless-action@v3
         with:
           token: ${{ secrets.YC_OAUTH_TOKEN }}
           function_id: ${{ vars.YC_FUNCTION_ID }}
