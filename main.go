@@ -140,8 +140,13 @@ func callAndLogError(f func() error) {
 }
 
 func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	server := &http.Server{
-		Addr:    ":8080", // listen on port 8080
+		Addr:    ":" + port, // listen on port 8080
 		Handler: http.HandlerFunc(HandleProxy),
 	}
 
