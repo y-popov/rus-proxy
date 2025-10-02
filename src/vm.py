@@ -116,7 +116,7 @@ def create_proxy_vm(sdk: SDK, folder_id: str, script: Path, preemptible=True) ->
     return operation_result.response
 
 
-def delete_proxy_vm(sdk: SDK, folder_id: str) -> Optional[Operation]:
+def delete_proxy_vm(sdk: SDK, folder_id: str):
     instance_service = sdk.client(InstanceServiceStub)
 
     instances = instance_service.List(
@@ -138,7 +138,8 @@ def delete_proxy_vm(sdk: SDK, folder_id: str) -> Optional[Operation]:
 
     logging.info("Deleting initiated")
 
-    return op
+    return sdk.wait_operation_and_get_result(operation=op)
+
 
 def get_disk_types(sdk: SDK):
     from yandex.cloud.compute.v1.disk_type_service_pb2 import ListDiskTypesRequest, ListDiskTypesResponse
