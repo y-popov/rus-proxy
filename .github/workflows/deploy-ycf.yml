@@ -3,15 +3,16 @@ on:
   push:
     paths:
       - 'src/**'
-      - 'terraform/metadata.yml'
       - 'requirements.txt'
+      - 'terraform/metadata.yml'
+      - '.github/workflows/deploy-ycf.yml'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: goodsmileduck/yandex-serverless-action@v2
+    - uses: goodsmileduck/yandex-serverless-action@v3
       with:
         token: ${{ secrets.YC_OAUTH_TOKEN }}
         function_id: ${{ vars.YC_FUNCTION_ID }}
