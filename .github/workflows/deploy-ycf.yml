@@ -1,0 +1,25 @@
+name: Push and Deploy Serverless function
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'terraform/metadata.yml'
+      - 'requirements.txt'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: goodsmileduck/yandex-serverless-action@v2
+      with:
+        token: ${{ secrets.YC_OAUTH_TOKEN }}
+        function_id: ${{ vars.YC_FUNCTION_ID }}
+        runtime: 'python312'
+        memory: '256'
+        execution_timeout: '180'
+        service_account: ${{ secrets.YC_SA_ID }}
+        entrypoint: 'src.main.telegram_webhook'
+        environment: TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }},YC_FOLDER_ID=${{ vars.YC_FOLDER_ID }},TELEGRAM_CHAT_WHITELIST=${{ vars.TELEGRAM_CHAT_WHITELIST }}
+        source: '.'
+        exclude: 'terraform/,.github/,README.md'
