@@ -8,7 +8,7 @@ from telegram.helpers import escape_markdown
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Application
 
 from yandexcloud import SDK
-from vm import create_proxy_vm, delete_proxy_vm
+from src.vm import create_proxy_vm, delete_proxy_vm
 
 
 LAUNCH = "launch"

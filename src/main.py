@@ -8,7 +8,7 @@ from typing import Optional
 from telegram import Update
 from telegram.ext import Application
 
-from tg import build_app
+from src.tg import build_app
 
 logging.basicConfig(level=logging.INFO)
 
