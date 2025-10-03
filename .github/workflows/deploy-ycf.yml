@@ -7,20 +7,28 @@ on:
       - 'terraform/metadata.yml'
       - '.github/workflows/deploy-ycf.yml'
 
+
+# https://github.com/yc-actions/yc-iam-token-fed
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: goodsmileduck/yandex-serverless-action@v3
+    - uses: yc-actions/yc-sls-function@v4
       with:
-        token: ${{ secrets.YC_OAUTH_TOKEN }}
-        function_id: ${{ vars.YC_FUNCTION_ID }}
+        yc-sa-id: ${{ secrets.YC_SA_DEPLOYER }}
+        folder-id: ${{ vars.YC_FOLDER_ID }}
+        function-name: 'ru-proxy'
         runtime: 'python312'
-        memory: '256'
-        execution_timeout: '180'
-        service_account: ${{ secrets.YC_SA_ID }}
+        memory: '256Mb'
+        execution-timeout: '180'
+        service-account: ${{ secrets.YC_SA_ID }}
         entrypoint: 'src/main.telegram_webhook'
-        environment: TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }},YC_FOLDER_ID=${{ vars.YC_FOLDER_ID }},TELEGRAM_CHAT_WHITELIST=${{ vars.TELEGRAM_CHAT_WHITELIST }}
-        source: '.'
-        exclude: 'terraform/,.github/,README.md'
+        environment: |
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+          YC_FOLDER_ID=${{ vars.YC_FOLDER_ID }}
+          TELEGRAM_CHAT_WHITELIST=${{ vars.TELEGRAM_CHAT_WHITELIST }}
+        include: |
+          ./src
+          requirements.txt
