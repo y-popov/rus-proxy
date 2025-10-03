@@ -19,7 +19,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: yc-actions/yc-sls-function@v4
       with:
-        yc-sa-id: ${{ secrets.YC_SA_DEPLOYER }}
+        yc-sa-json-credentials: ${{ secrets.YC_SA_DEPLOYER }}
         folder-id: ${{ vars.YC_FOLDER_ID }}
         function-name: 'ru-proxy'
         runtime: 'python312'
