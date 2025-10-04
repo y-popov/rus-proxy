@@ -29,6 +29,8 @@ async def launch_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.effective_message.reply_text(text="You are not allowed to start a proxy.")
         return
 
+    logging.info(f"Got launch request from user {update.effective_user.name} in chat {update.effective_chat.id}")
+
     await context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
 
     instance = create_proxy_vm(
