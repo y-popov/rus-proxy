@@ -17,6 +17,8 @@ _application: Optional[Application] = None
 _app_initialized: bool = False
 _loop: Optional[asyncio.AbstractEventLoop] = None
 
+METADATA_FILE = Path("./terraform/metadata.yml")
+
 
 def _get_loop() -> asyncio.AbstractEventLoop:
     global _loop
@@ -34,7 +36,7 @@ def _get_application():
         _application = build_app(
             tg_token=os.getenv("TELEGRAM_BOT_TOKEN"),
             folder_id=os.getenv("YC_FOLDER_ID"),
-            script=Path("../terraform/metadata.yml").absolute(),
+            script=METADATA_FILE.absolute(),
             chat_whitelist=get_whitelist()
         )
 
@@ -86,7 +88,7 @@ if __name__ == '__main__':
         tg_token=os.getenv("TELEGRAM_BOT_TOKEN"),
         yc_token=os.getenv("YC_OAUTH_TOKEN"),
         folder_id=os.getenv("YC_FOLDER_ID"),
-        script=Path("../terraform/metadata.yml"),
+        script=METADATA_FILE,
         chat_whitelist=get_whitelist()
     )
 

@@ -3,12 +3,11 @@ on:
   push:
     paths:
       - 'src/**'
+      - 'main.py'
       - 'requirements.txt'
       - 'terraform/metadata.yml'
       - '.github/workflows/deploy-ycf.yml'
 
-
-# https://github.com/yc-actions/yc-iam-token-fed
 
 jobs:
   deploy:
@@ -26,11 +25,13 @@ jobs:
         memory: '256Mb'
         execution-timeout: '180'
         service-account: ${{ secrets.YC_SA_ID }}
-        entrypoint: 'src/main.telegram_webhook'
+        entrypoint: 'main.telegram_webhook'
         environment: |
           TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
           YC_FOLDER_ID=${{ vars.YC_FOLDER_ID }}
           TELEGRAM_CHAT_WHITELIST=${{ vars.TELEGRAM_CHAT_WHITELIST }}
         include: |
-          ./src
+          main.py
           requirements.txt
+          ./src
+          ./terraform/metadata.yml
