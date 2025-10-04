@@ -56,7 +56,7 @@ async def stop_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def build_app(tg_token: str, folder_id: str, script: Path, chat_whitelist: list[int], yc_token: str = None) -> Application:
-    if tg_token is None or yc_token is None or script is None:
+    if tg_token is None or folder_id is None or script is None:
         raise ValueError("Telegram token, Folder ID and script must be provided")
     if not script.exists():
         raise ValueError("Script file does not exist")

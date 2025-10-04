@@ -57,13 +57,13 @@ def telegram_webhook(event: dict, context: dict):
     try:
         if event["httpMethod"] != "POST":
             logging.error("Received request with method %s", event["httpMethod"])
-            return "Method Not Allowed", 405
+            return {"body": "Method Not Allowed", "statusCode": 405}
 
         try:
             data = json.loads(event["body"])
         except json.JSONDecodeError:
             logging.error("Received request with no JSON payload")
-            return "Bad Request: no JSON payload", 400
+            return {"body": "Bad Request: no JSON payload", "statusCode": 400}
 
         application = _get_application()
         update = Update.de_json(data, application.bot)
@@ -71,11 +71,11 @@ def telegram_webhook(event: dict, context: dict):
         loop = _get_loop()
         loop.run_until_complete(application.process_update(update))
 
-        return "", 204
+        return {"body": "", "statusCode": 204}
 
     except Exception as e:
         logging.exception("Error handling webhook: %s", e)
-        return "", 204
+        return {"body": "", "statusCode": 204}
 
 
 if __name__ == '__main__':
