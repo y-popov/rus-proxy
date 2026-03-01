@@ -1,0 +1,2 @@
+yandexcloud==0.361.0
+python-telegram-bot==22.5
