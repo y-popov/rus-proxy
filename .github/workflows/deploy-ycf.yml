@@ -5,7 +5,7 @@ on:
       - 'src/**'
       - 'main.py'
       - 'requirements.txt'
-      - 'terraform/metadata.yml'
+      - 'templates/**'
       - '.github/workflows/deploy-ycf.yml'
 
 
@@ -32,4 +32,4 @@ jobs:
           main.py
           requirements.txt
           ./src
-          ./terraform/metadata.yml
+          ./templates

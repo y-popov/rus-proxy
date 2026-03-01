@@ -1,24 +1,27 @@
 import pytest
 import base64
 
-from src.vpn import generate_wg_keypair
+from pygments.lexer import inherit
+
+from src.vpn import generate_wg_keypair, WireGuardKeyPair
 
 
 def test_generate_wg_keypair():
-    private_b64, public_b64 = generate_wg_keypair()
+    keypair = generate_wg_keypair()
+    assert isinstance(keypair, WireGuardKeyPair)
+    assert isinstance(keypair.private_key, str)
+    assert isinstance(keypair.public_key, str)
 
     # Base64 -> raw bytes
-    private_raw = base64.b64decode(private_b64)
-    public_raw = base64.b64decode(public_b64)
+    private_raw = base64.b64decode(keypair.private_key)
+    public_raw = base64.b64decode(keypair.public_key)
 
-    assert isinstance(private_b64, str)
-    assert isinstance(public_b64, str)
     assert len(private_raw) == 32
     assert len(public_raw) == 32
 
     # Function generates different private keys across calls
-    priv1, pub1 = generate_wg_keypair()
-    priv2, pub2 = generate_wg_keypair()
+    keypair1 = generate_wg_keypair()
+    keypair2 = generate_wg_keypair()
 
-    assert priv1 != priv2
-    assert pub1 != pub2
+    assert keypair1.private_key != keypair2.private_key
+    assert keypair1.public_key != keypair2.public_key

@@ -1,10 +1,17 @@
 import base64
+from dataclasses import dataclass
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import x25519
 
 
-def generate_wg_keypair() -> tuple[str, str]:
+@dataclass(frozen=True, slots=True)
+class WireGuardKeyPair:
+    private_key: str
+    public_key: str
+
+
+def generate_wg_keypair() -> WireGuardKeyPair:
     """
     Generate a WireGuard-compatible private/public keypair using cryptography.
     Returns:
@@ -24,7 +31,7 @@ def generate_wg_keypair() -> tuple[str, str]:
         format=serialization.PublicFormat.Raw,
     )
 
-    return (
-        base64.b64encode(private_raw).decode(),
-        base64.b64encode(public_raw).decode()
+    return WireGuardKeyPair(
+        private_key=base64.b64encode(private_raw).decode(),
+        public_key=base64.b64encode(public_raw).decode()
     )
