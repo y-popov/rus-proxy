@@ -47,7 +47,8 @@ async def reply_proxy_ip(update: Update, ip: str) -> None:
 
 async def reply_client_config(update: Update, client_config: str) -> None:
     data = BytesIO(client_config.encode("utf-8"))
-    await update.effective_message.reply_document(document=data, filename="client.conf", do_quote=False)
+    await update.effective_message.reply_document(document=data, filename="myvpn.conf", do_quote=False)
+    await update.effective_message.reply_text("Open WireGuard → + → Import from file", do_quote=False)
 
 
 async def launch_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
