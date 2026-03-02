@@ -17,7 +17,8 @@ _application: Optional[Application] = None
 _app_initialized: bool = False
 _loop: Optional[asyncio.AbstractEventLoop] = None
 
-METADATA_FILE = Path("./terraform/metadata.yml")
+METADATA_TEMPLATE = Path("templates/metadata-vpn.yml.j2")
+CLIENT_CONFIG_TEMPLATE = Path("templates/client_config.yml.j2")
 
 
 def _get_loop() -> asyncio.AbstractEventLoop:
@@ -36,7 +37,8 @@ def _get_application():
         _application = build_app(
             tg_token=os.getenv("TELEGRAM_BOT_TOKEN"),
             folder_id=os.getenv("YC_FOLDER_ID"),
-            script=METADATA_FILE.absolute(),
+            metadata_template=METADATA_TEMPLATE,
+            client_config_template=CLIENT_CONFIG_TEMPLATE,
             chat_whitelist=get_whitelist()
         )
 
@@ -86,10 +88,11 @@ if __name__ == '__main__':
 
     app = build_app(
         tg_token=os.getenv("TELEGRAM_BOT_TOKEN"),
-        yc_token=os.getenv("YC_OAUTH_TOKEN"),
         folder_id=os.getenv("YC_FOLDER_ID"),
-        script=METADATA_FILE,
-        chat_whitelist=get_whitelist()
+        metadata_template=METADATA_TEMPLATE,
+        client_config_template=CLIENT_CONFIG_TEMPLATE,
+        chat_whitelist=get_whitelist(),
+        yc_token=os.getenv("YC_OAUTH_TOKEN")
     )
 
     app.run_polling()

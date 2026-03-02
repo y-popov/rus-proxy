@@ -1,7 +1,6 @@
 import os
 import logging
 
-from typing import Optional
 from pathlib import Path
 from yandexcloud import SDK
 
@@ -56,16 +55,16 @@ def get_network(sdk: SDK, folder_id: str, network_name: str) -> Network:
 
     return networks[0]
 
-def create_proxy_vm(sdk: SDK, folder_id: str, script: Path, preemptible=True) -> Instance:
+def create_proxy_vm(sdk: SDK, folder_id: str, cloud_config: str, preemptible=True) -> Instance:
     zone = get_available_zone(sdk)
     network = get_network(sdk, folder_id, PROXY_NETWORK_NAME)
     subnet_id = sdk.helpers.find_subnet_id(folder_id=folder_id, zone_id=zone.id, network_id=network.id)
 
     instance_service = sdk.client(InstanceServiceStub)
 
-    metadata = {}
-    if script is not None:
-        metadata["user-data"] = script.read_text()
+    metadata = {
+        "user-data": cloud_config
+    }
 
     op: Operation = instance_service.Create(
         CreateInstanceRequest(
@@ -158,10 +157,11 @@ if __name__ == "__main__":
 
     folder = os.getenv("YC_FOLDER_ID")
     script = Path("../terraform/metadata.yml")
+    metadata = script.read_text()
 
     sdk = SDK(token=os.getenv("YC_OAUTH_TOKEN"))
 
-    proxy = create_proxy_vm(sdk, folder_id=folder, script=script)
+    proxy = create_proxy_vm(sdk, folder_id=folder, cloud_config=metadata)
 
     ip = proxy.network_interfaces[0].primary_v4_address.one_to_one_nat.address
     logging.info(f"IP address: {ip}")

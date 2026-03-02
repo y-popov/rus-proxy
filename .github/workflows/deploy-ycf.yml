@@ -1,11 +1,13 @@
 name: Push and Deploy Serverless function
 on:
   push:
+    branches:
+      - master
     paths:
       - 'src/**'
       - 'main.py'
       - 'requirements.txt'
-      - 'terraform/metadata.yml'
+      - 'templates/**'
       - '.github/workflows/deploy-ycf.yml'
 
 
@@ -32,4 +34,4 @@ jobs:
           main.py
           requirements.txt
           ./src
-          ./terraform/metadata.yml
+          ./templates

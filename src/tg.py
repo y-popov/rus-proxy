@@ -1,5 +1,7 @@
 import logging
+from io import BytesIO
 from pathlib import Path
+from yandexcloud import SDK
 
 from telegram import Update
 from telegram import ReplyKeyboardMarkup, KeyboardButton
@@ -7,14 +9,17 @@ from telegram.constants import ChatAction
 from telegram.helpers import escape_markdown
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, Application
 
-from yandexcloud import SDK
-from src.vm import create_proxy_vm, delete_proxy_vm
+from src.service import Service
 
 
 LAUNCH = "launch"
 STOP   = "stop"
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+BOTDATA_CHAT_WHITELIST = "chat_whitelist"
+BOTDATA_SERVICE = "service"
+
+
+async def start(update: Update):
     keyboard = [[
         KeyboardButton(f"/{LAUNCH}"),
         KeyboardButton(f"/{STOP}")
@@ -23,55 +28,81 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text('Start and stop proxy!', reply_markup=reply_markup)
 
 
+def is_authorized(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
+    whitelist: list[int] = context.application.bot_data[BOTDATA_CHAT_WHITELIST]
+    return update.effective_chat.id in whitelist
+
+
+async def reject_unauthorized(update: Update) -> None:
+    logging.warning(f"Unauthorized access denied for {update.effective_user.name} in {update.effective_chat.id}.")
+    await update.effective_message.reply_text(text="You are not allowed to interact with a service.", do_quote=False)
+
+
+async def reply_proxy_ip(update: Update, ip: str) -> None:
+    ip_string = escape_markdown(ip, version=2)
+    message = escape_markdown("Proxy launched. IP address:", version=2)
+    text = f"{message} `{ip_string}`"
+    await update.effective_message.reply_text(text=text, parse_mode="MarkdownV2", do_quote=False)
+
+
+async def reply_client_config(update: Update, client_config: str) -> None:
+    data = BytesIO(client_config.encode("utf-8"))
+    await update.effective_message.reply_document(document=data, filename="myvpn.conf", do_quote=False)
+    await update.effective_message.reply_text("Open WireGuard → + → Import from file", do_quote=False)
+
+
 async def launch_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.id not in context.application.bot_data["chat_whitelist"]:
-        logging.warning(f"Unauthorized access denied for {update.effective_user.name} in {update.effective_chat.id}.")
-        await update.effective_message.reply_text(text="You are not allowed to start a proxy.")
+    if not is_authorized(update, context):
+        await reject_unauthorized(update)
         return
 
     logging.info(f"Got launch request from user {update.effective_user.name} in chat {update.effective_chat.id}")
 
-    await context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
+    await update.effective_message.reply_text("Launching server...", do_quote=False)
+    await update.effective_message.reply_chat_action(action=ChatAction.TYPING)
 
-    instance = create_proxy_vm(
-        sdk=context.application.bot_data["sdk"],
-        folder_id=context.application.bot_data["folder_id"],
-        script=context.application.bot_data["script"]
-    )
+    service: Service = context.application.bot_data[BOTDATA_SERVICE]
+    result = service.launch()
 
-    ip = instance.network_interfaces[0].primary_v4_address.one_to_one_nat.address
-    ip = escape_markdown(ip, version=2)
-    message = escape_markdown("Proxy launched. IP address:", version=2)
-
-    text = f"{message} `{ip}`"
-    await update.effective_message.reply_text(text=text, parse_mode="MarkdownV2")
+    await reply_proxy_ip(update, ip=result.ip)
+    await reply_client_config(update, client_config=result.client_config)
 
 
 async def stop_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    delete_proxy_vm(
-        sdk=context.application.bot_data["sdk"],
-        folder_id=context.application.bot_data["folder_id"]
-    )
+    if not is_authorized(update, context):
+        await reject_unauthorized(update)
+        return
 
-    text = "Proxy removed successfully."
-    await update.effective_message.reply_text(text=text)
+    service: Service = context.application.bot_data[BOTDATA_SERVICE]
+
+    try:
+        service.stop()
+        text = "Proxy removed successfully."
+    except Exception:
+        logging.exception("Failed to stop service")
+        text = "Proxy not removed due to an internal error."
+
+    await update.effective_message.reply_text(text=text, do_quote=False)
 
 
-def build_app(tg_token: str, folder_id: str, script: Path, chat_whitelist: list[int], yc_token: str = None) -> Application:
-    if tg_token is None or folder_id is None or script is None:
-        raise ValueError("Telegram token, Folder ID and script must be provided")
-    if not script.exists():
-        raise ValueError("Script file does not exist")
+def build_app(tg_token: str, folder_id: str, metadata_template: Path, client_config_template: Path, chat_whitelist: list[int], yc_token: str = None) -> Application:
+    if tg_token is None or folder_id is None or metadata_template is None or client_config_template is None:
+        raise ValueError("Telegram token, Folder ID, metadata_template and client_config_template must be provided")
 
     application = ApplicationBuilder().token(tg_token).build()
 
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
 
-    application.bot_data["sdk"] = SDK(token=yc_token)
-    application.bot_data["folder_id"] = folder_id
-    application.bot_data["script"] = script
-    application.bot_data["chat_whitelist"] = chat_whitelist
+    service = Service(
+        sdk=SDK(token=yc_token),
+        folder_id=folder_id,
+        metadata_template=metadata_template,
+        client_config_template=client_config_template
+    )
+
+    application.bot_data[BOTDATA_SERVICE] = service
+    application.bot_data[BOTDATA_CHAT_WHITELIST] = chat_whitelist
 
     launcher = CommandHandler(LAUNCH, launch_proxy)
     application.add_handler(launcher)

@@ -1,2 +1,4 @@
-yandexcloud==0.361.0
+cryptography==46.0.5
+jinja2==3.1.6
 python-telegram-bot==22.5
+yandexcloud==0.361.0
