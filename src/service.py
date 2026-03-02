@@ -52,3 +52,19 @@ class Service:
 
     def stop(self) -> None:
         delete_proxy_vm(sdk=self.sdk, folder_id=self.folder_id)
+
+
+if __name__ == "__main__":
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    svc = Service(
+        sdk=SDK(token=os.getenv("YC_OAUTH_TOKEN")),
+        folder_id=os.getenv("YC_FOLDER_ID"),
+        metadata_template=Path("../templates/metadata-vpn.yml.j2"),
+        client_config_template=Path("../templates/client_config.yml.j2")
+    )
+
+    svc.launch()
+    svc.stop()

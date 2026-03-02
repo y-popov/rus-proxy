@@ -1,4 +1,5 @@
 import logging
+from io import BytesIO
 from pathlib import Path
 from yandexcloud import SDK
 
@@ -34,7 +35,7 @@ def is_authorized(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
 
 async def reject_unauthorized(update: Update) -> None:
     logging.warning(f"Unauthorized access denied for {update.effective_user.name} in {update.effective_chat.id}.")
-    await update.effective_message.reply_text(text="You are not allowed to start a proxy.", do_quote=False)
+    await update.effective_message.reply_text(text="You are not allowed to interact with a service.", do_quote=False)
 
 
 async def reply_proxy_ip(update: Update, ip: str) -> None:
@@ -45,7 +46,8 @@ async def reply_proxy_ip(update: Update, ip: str) -> None:
 
 
 async def reply_client_config(update: Update, client_config: str) -> None:
-    await update.effective_message.reply_text(text=client_config, do_quote=False)
+    data = BytesIO(client_config.encode("utf-8"))
+    await update.effective_message.reply_document(document=data, filename="client.conf", do_quote=False)
 
 
 async def launch_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -66,11 +68,20 @@ async def launch_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def stop_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    service: Service = context.application.bot_data[BOTDATA_SERVICE]
-    service.stop()
+    if not is_authorized(update, context):
+        await reject_unauthorized(update)
+        return
 
-    text = "Proxy removed successfully."
-    await update.effective_message.reply_text(text=text)
+    service: Service = context.application.bot_data[BOTDATA_SERVICE]
+
+    try:
+        service.stop()
+        text = "Proxy removed successfully."
+    except Exception:
+        logging.exception("Failed to stop service")
+        text = "Proxy not removed due to an internal error."
+
+    await update.effective_message.reply_text(text=text, do_quote=False)
 
 
 def build_app(tg_token: str, folder_id: str, metadata_template: Path, client_config_template: Path, chat_whitelist: list[int], yc_token: str = None) -> Application:

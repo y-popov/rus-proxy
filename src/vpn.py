@@ -14,8 +14,6 @@ class WireGuardKeyPair:
 def generate_wg_keypair() -> WireGuardKeyPair:
     """
     Generate a WireGuard-compatible private/public keypair using cryptography.
-    Returns:
-        (private_key_b64, public_key_b64)
     """
     private = x25519.X25519PrivateKey.generate()
     public = private.public_key()
