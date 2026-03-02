@@ -1,10 +1,7 @@
 import os
 import logging
 
-from typing import Optional
 from pathlib import Path
-
-from jinja2 import Template
 from yandexcloud import SDK
 
 from yandex.cloud.vpc.v1.network_pb2 import Network
@@ -160,12 +157,13 @@ if __name__ == "__main__":
 
     folder = os.getenv("YC_FOLDER_ID")
     script = Path("../terraform/metadata.yml")
+    metadata = script.read_text()
 
     sdk = SDK(token=os.getenv("YC_OAUTH_TOKEN"))
 
-    proxy = create_proxy_vm(sdk, folder_id=folder)
+    proxy = create_proxy_vm(sdk, folder_id=folder, cloud_config=metadata)
 
     ip = proxy.network_interfaces[0].primary_v4_address.one_to_one_nat.address
     logging.info(f"IP address: {ip}")
 
-    # delete_proxy_vm(sdk, folder_id=folder)
+    delete_proxy_vm(sdk, folder_id=folder)
