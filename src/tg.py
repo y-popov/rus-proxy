@@ -1,5 +1,4 @@
 import logging
-from io import BytesIO
 from pathlib import Path
 from yandexcloud import SDK
 
@@ -45,10 +44,10 @@ async def reply_proxy_ip(update: Update, ip: str) -> None:
     await update.effective_message.reply_text(text=text, parse_mode="MarkdownV2", do_quote=False)
 
 
-async def reply_client_config(update: Update, client_config: str) -> None:
-    data = BytesIO(client_config.encode("utf-8"))
-    await update.effective_message.reply_document(document=data, filename="myvpn.conf", do_quote=False)
-    await update.effective_message.reply_text("Open WireGuard → + → Import from file", do_quote=False)
+async def reply_client_link(update: Update, client_link: str) -> None:
+    header = "Open v2rayNG → + → Import from Clipboard"
+    message = f"{header}\n\n`{client_link}`"
+    await update.effective_message.reply_text(message, do_quote=False)
 
 
 async def launch_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -65,7 +64,7 @@ async def launch_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     result = service.launch()
 
     await reply_proxy_ip(update, ip=result.ip)
-    await reply_client_config(update, client_config=result.client_config)
+    await reply_client_link(update, client_link=result.client_link)
 
 
 async def stop_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -85,9 +84,9 @@ async def stop_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(text=text, do_quote=False)
 
 
-def build_app(tg_token: str, folder_id: str, metadata_template: Path, client_config_template: Path, chat_whitelist: list[int], yc_token: str = None) -> Application:
-    if tg_token is None or folder_id is None or metadata_template is None or client_config_template is None:
-        raise ValueError("Telegram token, Folder ID, metadata_template and client_config_template must be provided")
+def build_app(tg_token: str, folder_id: str, metadata_template: Path, chat_whitelist: list[int], yc_token: str = None) -> Application:
+    if tg_token is None or folder_id is None or metadata_template is None:
+        raise ValueError("Telegram token, Folder ID and metadata_template must be provided")
 
     application = ApplicationBuilder().token(tg_token).build()
 
@@ -97,8 +96,7 @@ def build_app(tg_token: str, folder_id: str, metadata_template: Path, client_con
     service = Service(
         sdk=SDK(token=yc_token),
         folder_id=folder_id,
-        metadata_template=metadata_template,
-        client_config_template=client_config_template
+        metadata_template=metadata_template
     )
 
     application.bot_data[BOTDATA_SERVICE] = service

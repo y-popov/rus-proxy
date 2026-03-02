@@ -38,7 +38,6 @@ def _get_application():
             tg_token=os.getenv("TELEGRAM_BOT_TOKEN"),
             folder_id=os.getenv("YC_FOLDER_ID"),
             metadata_template=METADATA_TEMPLATE,
-            client_config_template=CLIENT_CONFIG_TEMPLATE,
             chat_whitelist=get_whitelist()
         )
 
@@ -90,7 +89,6 @@ if __name__ == '__main__':
         tg_token=os.getenv("TELEGRAM_BOT_TOKEN"),
         folder_id=os.getenv("YC_FOLDER_ID"),
         metadata_template=METADATA_TEMPLATE,
-        client_config_template=CLIENT_CONFIG_TEMPLATE,
         chat_whitelist=get_whitelist(),
         yc_token=os.getenv("YC_OAUTH_TOKEN")
     )

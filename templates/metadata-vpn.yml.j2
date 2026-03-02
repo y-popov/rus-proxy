@@ -1,7 +1,6 @@
 #cloud-config
 packages:
   - [squid, 4.10-1ubuntu1.13]
-  - [wireguard, 1.0.20200513-1~20.04.2]
 
 runcmd:
   - echo "Setting up squid..."
@@ -9,26 +8,50 @@ runcmd:
   - sudo systemctl enable squid
   - sed -i '/^http_access allow localhost$/a http_access allow all' /etc/squid/squid.conf
   - sudo systemctl restart squid
-  - echo "Setting up wireguard..."
-  - sysctl --system
-  - wg-quick up wg0
+  - echo "Setting up Xray..."
+  - bash <(curl -Ls https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh) --version v26.2.6
+  - systemctl enable xray
+  - systemctl restart xray
 
 write_files:
-  - path: /etc/wireguard/wg0.conf
-    permissions: '0600'
+  - path: /usr/local/etc/xray/config.json
+    permissions: '0644'
     content: |
-      [Interface]
-      PrivateKey = {{ server_private_key }}
-      Address = 10.0.0.1/24
-      ListenPort = 51820
-
-      PostUp = iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-      PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
-
-      [Peer]
-      PublicKey = {{ client_public_key }}
-      AllowedIPs = 10.0.0.2/32
-
-  - path: /etc/sysctl.d/99-wireguard.conf
-    content: |
-      net.ipv4.ip_forward=1
+      {
+        "inbounds": [
+          {
+            "port": 443,
+            "protocol": "vless",
+            "settings": {
+              "clients": [
+                {
+                  "id": "{{ client_uuid }}",
+                  "flow": "xtls-rprx-vision"
+                }
+              ],
+              "decryption": "none"
+            },
+            "streamSettings": {
+              "network": "tcp",
+              "security": "reality",
+              "realitySettings": {
+                "show": false,
+                "dest": "www.cloudflare.com:443",
+                "xver": 0,
+                "serverNames": [
+                  "www.cloudflare.com"
+                ],
+                "privateKey": "{{ reality_private_key }}",
+                "shortIds": [
+                  "{{ short_id }}"
+                ]
+              }
+            }
+          }
+        ],
+        "outbounds": [
+          {
+            "protocol": "freedom"
+          }
+        ]
+      }
