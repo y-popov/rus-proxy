@@ -1,6 +1,8 @@
 name: Push and Deploy Serverless function
 on:
   push:
+    branches:
+      - master
     paths:
       - 'src/**'
       - 'main.py'
