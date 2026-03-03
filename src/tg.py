@@ -45,9 +45,9 @@ async def reply_proxy_ip(update: Update, ip: str) -> None:
 
 
 async def reply_client_link(update: Update, client_link: str) -> None:
-    header = "Open v2rayNG → + → Import from Clipboard"
+    header = escape_markdown("Open v2rayNG → + → Import from Clipboard", version=2)
     message = f"{header}\n\n`{client_link}`"
-    await update.effective_message.reply_text(message, do_quote=False)
+    await update.effective_message.reply_text(message, parse_mode="MarkdownV2", do_quote=False)
 
 
 async def launch_proxy(update: Update, context: ContextTypes.DEFAULT_TYPE):

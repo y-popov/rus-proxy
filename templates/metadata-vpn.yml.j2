@@ -9,7 +9,8 @@ runcmd:
   - sed -i '/^http_access allow localhost$/a http_access allow all' /etc/squid/squid.conf
   - sudo systemctl restart squid
   - echo "Setting up Xray..."
-  - bash <(curl -Ls https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh) --version v26.2.6
+  - curl -LOs https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh
+  - bash install-release.sh --version v26.2.6
   - systemctl enable xray
   - systemctl restart xray
 

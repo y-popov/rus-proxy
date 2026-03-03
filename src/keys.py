@@ -13,7 +13,7 @@ class KeyPair:
     public_key: str
 
 
-def generate_keypair() -> KeyPair:
+def generate_keypair(urlsafe: bool = False) -> KeyPair:
     """
     Generate a WireGuard/v2ray-compatible private/public keypair using cryptography.
     """
@@ -30,6 +30,12 @@ def generate_keypair() -> KeyPair:
         encoding=serialization.Encoding.Raw,
         format=serialization.PublicFormat.Raw,
     )
+
+    if urlsafe:
+        return KeyPair(
+            private_key=base64.urlsafe_b64encode(private_raw).rstrip(b'=').decode(),
+            public_key=base64.urlsafe_b64encode(public_raw).rstrip(b'=').decode(),
+        )
 
     return KeyPair(
         private_key=base64.b64encode(private_raw).decode(),

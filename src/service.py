@@ -44,7 +44,7 @@ class Service:
         return f"vless://{uuid}@{server_ip}:443?{query_string}#{quote(server_name)}"
 
     def launch(self) -> LaunchResult:
-        keypair = generate_keypair()
+        keypair = generate_keypair(urlsafe=True)
         client_id = generate_uuid()
         short_id = generate_short_id()
 
